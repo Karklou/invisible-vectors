@@ -6,11 +6,11 @@
 
 ## What this is
 
-A data art and analytical research project tracing how ideas survive suppression across centuries — not through their conscious defenders, but through the unexpected actors who carried them without understanding what they were carrying.
+A data art and analytical research project tracing how ideas survive suppression across centuries. Not through their conscious defenders, but through the unexpected actors who carried them without understanding what they were carrying.
 
 The prototype case: **heliocentrism**, from Aristarchus of Samos (~310 BC) to Newton (1687). Twenty centuries.
 
-The central finding: the most important vectors for the survival of the heliocentric idea were not its conscious defenders. They were the indirect actors — medieval scribes reproducing a school text without reading it as astronomy, a commercial printer who let a distorting preface pass without reaction, an institution that preserved the enemy of the idea and made its eventual resurgence possible.
+The central finding: the most important vectors for the survival of the heliocentric idea were not its conscious defenders. They were the indirect actors. Medieval scribes reproducing a school text without reading it as astronomy, a commercial printer who let a distorting preface pass without reaction, an institution that preserved the enemy of the idea and made its eventual resurgence possible.
 
 This is not a history of science project. It is a method for making visible what has never been seen directly: **the structure of unconscious transmission networks**.
 
