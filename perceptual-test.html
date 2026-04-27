@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invisible Knowledge Vectors — Perceptual Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0C0C0C;
+    color: #D0D0D0;
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+  }
+
+  .wrapper {
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .timeline-area {
+    position: relative;
+    padding: 80px 0 60px;
+    overflow: visible;
+  }
+
+  .timeline-axis {
+    position: absolute;
+    bottom: 60px;
+    left: 0; right: 0;
+    height: 1px;
+    background: #2A2A2A;
+  }
+
+  .nodes-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+  }
+
+  .connections-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .node-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+  }
+
+  .node-label {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    line-height: 1.4;
+    max-width: 90px;
+  }
+  .node-label .place {
+    font-size: 10px;
+    color: #555;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .node-shape-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+  }
+
+  .node-date {
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 0.03em;
+  }
+
+  .circle {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .circle-solid {
+    background: #EFEFEF;
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 0 18px 6px rgba(255,255,255,0.12),
+                0 0 40px 12px rgba(255,255,255,0.06);
+  }
+
+  .circle-dashed-large {
+    background: rgba(255,255,255,0.04);
+    border: 2px dashed #888888;
+  }
+
+  .circle-dashed-small {
+    background: rgba(255,255,255,0.03);
+    border: 1.5px dashed #666666;
+  }
+
+  .circle-dashed-medium {
+    background: rgba(255,255,255,0.035);
+    border: 1.5px dashed #707070;
+  }
+
+  .square-hatched {
+    position: relative;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 4px,
+      rgba(150,150,150,0.18) 4px,
+      rgba(150,150,150,0.18) 5px
+    );
+    border: 1.8px solid #888888;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1E1E1E;
+    margin: 16px 0 28px;
+  }
+
+  .caption {
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+    font-style: italic;
+    margin-bottom: 36px;
+    letter-spacing: 0.01em;
+  }
+
+  .question {
+    font-size: 17px;
+    font-weight: bold;
+    color: #D8D8D8;
+    margin-bottom: 18px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .poll {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .poll-option {
+    border: 1px solid #2A2A2A;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #AAAAAA;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: 0.01em;
+  }
+  .poll-option:hover {
+    border-color: #555;
+    background: rgba(255,255,255,0.03);
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="timeline-area" id="timeline">
+    <div class="timeline-axis"></div>
+    <div class="nodes-row" id="nodesRow">
+
+      <!-- Bayt al-Hikmah -->
+      <div class="node-card">
+        <div class="node-label">Bayt al-Hikmah<span class="place">Baghdad</span></div>
+        <div class="node-shape-wrap">
+          <div class="square-hatched" style="width:58px;height:58px;"></div>
+        </div>
+        <div class="node-date">~830</div>
+      </div>
+
+      <!-- Hunayn ibn Ishaq -->
+      <div class="node-card">
+        <div class="node-label">Hunayn ibn Ishaq<span class="place">Baghdad</span></div>
+        <div class="node-shape-wrap">
+          <div class="circle circle-dashed-large" style="width:58px;height:58px;"></div>
+        </div>
+        <div class="node-date">~870</div>
+      </div>
+
+      <!-- Carolingian scribe -->
+      <div class="node-card">
+        <div class="node-label">Carolingian scribe<span class="place">Frankish Gaul</span></div>
+        <div class="node-shape-wrap">
+          <div class="circle circle-dashed-small" style="width:38px;height:38px;"></div>
+        </div>
+        <div class="node-date">~900</div>
+      </div>
+
+      <!-- Al-Tusi -->
+      <div class="node-card">
+        <div class="node-label">Al-Tusi<span class="place">Maragha</span></div>
+        <div class="node-shape-wrap">
+          <div class="circle circle-dashed-medium" style="width:50px;height:50px;"></div>
+        </div>
+        <div class="node-date">~1260</div>
+      </div>
+
+      <!-- Petreius -->
+      <div class="node-card">
+        <div class="node-label">Petreius<span class="place">Nuremberg</span></div>
+        <div class="node-shape-wrap">
+          <div class="circle circle-dashed-large" style="width:62px;height:62px;"></div>
+        </div>
+        <div class="node-date">1543</div>
+      </div>
+
+      <!-- Rheticus -->
+      <div class="node-card">
+        <div class="node-label">Rheticus<span class="place">Frauenburg</span></div>
+        <div class="node-shape-wrap">
+          <div class="circle circle-solid" style="width:68px;height:68px;"></div>
+        </div>
+        <div class="node-date">1543</div>
+      </div>
+
+    </div>
+
+    <svg class="connections-svg" id="connSvg"></svg>
+  </div>
+
+  <hr class="divider">
+  <p class="caption">No legend. Six vectors. Only one knew what it was carrying.</p>
+
+  <p class="question">Without reading the names — which one seems to be acting intentionally?</p>
+
+  <div class="poll">
+    <div class="poll-option">Bayt al-Hikmah — hatched square</div>
+    <div class="poll-option">Hunayn ibn Ishaq — large dashed circle</div>
+    <div class="poll-option">Carolingian scribe — small, very faint dashed circle</div>
+    <div class="poll-option">Al-Tusi — medium dashed circle</div>
+    <div class="poll-option">Petreius — large dashed circle</div>
+    <div class="poll-option">Rheticus — solid circle, strong outline</div>
+  </div>
+
+</div>
+
+<script>
+window.addEventListener('load', () => {
+  const svg = document.getElementById('connSvg');
+  const row = document.getElementById('nodesRow');
+  const area = document.getElementById('timeline');
+  const areaRect = area.getBoundingClientRect();
+
+  const cards = Array.from(row.querySelectorAll('.node-card'));
+  const centres = cards.map(card => {
+    const shape = card.querySelector('.node-shape-wrap');
+    const r = shape.getBoundingClientRect();
+    return {
+      x: r.left + r.width/2 - areaRect.left,
+      y: r.top  + r.height/2 - areaRect.top,
+    };
+  });
+
+  const edges = [
+    [0, 1, true],
+    [1, 2, true],
+    [1, 3, true],
+    [2, 4, true],
+    [3, 4, true],
+    [4, 5, false],
+  ];
+
+  edges.forEach(([a, b, dashed]) => {
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', centres[a].x);
+    line.setAttribute('y1', centres[a].y);
+    line.setAttribute('x2', centres[b].x);
+    line.setAttribute('y2', centres[b].y);
+    line.setAttribute('stroke', '#333333');
+    line.setAttribute('stroke-width', '1.2');
+    line.setAttribute('stroke-opacity', '0.7');
+    if (dashed) line.setAttribute('stroke-dasharray', '5 4');
+    svg.appendChild(line);
+  });
+});
+</script>
+</body>
+</html>

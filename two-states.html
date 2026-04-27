@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invisible Vectors — Two States</title>
+<style>
+:root {
+  --bg: #0C0C0C;
+  --fg: #D0D0D0;
+  --muted: #6E6E6E;
+  --faint: #3C3C3C;
+  --axis: #1A1A1A;
+
+  --edge-bold: #C8C8C8;
+  --edge-thin: #7E7E7E;
+  --edge-dormant: #3A3A3A;
+  --activation: #FFFFFF;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Georgia', serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.wrapper { width: 100%; max-width: 1240px; }
+
+/* ── Toggle ── */
+.toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 42px;
+}
+.toggle-btn {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 26px;
+  background: transparent;
+  color: #3E3E3E;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  border: 1px solid #1E1E1E;
+  transition: color 0.35s, border-color 0.35s, background 0.35s;
+}
+.toggle-btn.active {
+  color: #C8C8C8;
+  border-color: #484848;
+  background: rgba(255,255,255,0.035);
+}
+#btnSync     { border-radius: 3px 0 0 3px; }
+#btnAnalytic { border-radius: 0 3px 3px 0; border-left: none; }
+
+/* ── Viz ── */
+.viz-area { width: 100%; position: relative; }
+.viz {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* Axis + time ticks */
+.axis {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+.tick {
+  stroke: #1C1C1C;
+  stroke-width: 1;
+}
+.tick-label {
+  fill: #2E2E2E;
+  font-size: 9px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: 0.05em;
+  text-anchor: middle;
+}
+
+/* ── Node text ── */
+.node text {
+  text-anchor: middle;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.node .node-name {
+  font-size: 12px;
+  fill: #7E7E7E;
+  font-family: Georgia, serif;
+}
+.node .node-place {
+  font-size: 9px;
+  fill: #454545;
+  font-style: italic;
+}
+.node .node-date {
+  font-size: 10px;
+  fill: #424242;
+  letter-spacing: 0.05em;
+}
+
+/* ── Shapes ── */
+.shape { transition: filter 0.9s ease, opacity 0.9s ease; }
+
+.shape.conscious {
+  fill: #EDEDED;
+  stroke: #FFFFFF;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.16));
+}
+.shape.unconscious {
+  fill: rgba(140,140,140,0.10);
+  stroke: #808080;
+  stroke-width: 1;
+  opacity: 0.38;
+}
+.shape.institutional {
+  fill: url(#hatch);
+  stroke: #9C9C9C;
+  stroke-width: 1.6;
+  opacity: 0.66;
+}
+.shape.fragmented path {
+  fill: none;
+  stroke: #A8A8A8;
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+/* Activator ring + ignition bloom */
+.activator-ring {
+  fill: none;
+  stroke: rgba(255,255,255,0.32);
+  stroke-width: 1;
+  opacity: 0;
+  transition: opacity 0.7s ease 0.7s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.state-analytic .activator-ring {
+  opacity: 1;
+  animation: pulse-ring 3s ease-in-out infinite 1.2s;
+}
+@keyframes pulse-ring {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.10; transform: scale(1.22); }
+}
+
+.state-analytic .shape.activator {
+  filter: drop-shadow(0 0 16px rgba(255,255,255,0.45));
+}
+
+.ignition-bloom {
+  fill: #FFFFFF;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Edges ── */
+.edge {
+  fill: none;
+  transition:
+    stroke 0.9s ease,
+    stroke-opacity 0.9s ease,
+    stroke-width 0.9s ease,
+    stroke-dasharray 0.9s ease;
+}
+
+.edge.deliberate {
+  stroke: var(--edge-bold);
+  stroke-width: 2.4;
+  stroke-opacity: 0.82;
+  stroke-dasharray: 0;
+}
+
+.edge.latent {
+  stroke: var(--edge-thin);
+  stroke-width: 1;
+  stroke-opacity: 0.52;
+  stroke-dasharray: 0.7 3;
+}
+
+.state-analytic .edge.dormant {
+  stroke: var(--edge-dormant);
+  stroke-width: 1;
+  stroke-opacity: 0.26;
+  stroke-dasharray: 7 5;
+}
+
+.edge.pulsed {
+  stroke: var(--activation) !important;
+  stroke-width: 3 !important;
+  stroke-opacity: 1 !important;
+  stroke-dasharray: 0 !important;
+  transition: none;
+}
+
+/* ── Footer ── */
+hr.divider { border: none; border-top: 1px solid #141414; margin: 24px 0 18px; }
+.caption {
+  text-align: center;
+  font-size: 13px;
+  color: #3A3A3A;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.state-label {
+  text-align: center;
+  font-size: 10px;
+  color: #383838;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: color 0.6s;
+}
+.state-analytic .state-label { color: #5C5C5C; }
+.kbd-hint {
+  text-align: center;
+  font-size: 9px;
+  color: #232323;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+</style>
+</head>
+<body>
+<div class="wrapper" id="wrapper">
+
+  <!-- Toggle -->
+  <div class="toggle-row">
+    <button class="toggle-btn active" id="btnSync"     onclick="setState('sync')">Synchronic</button>
+    <button class="toggle-btn"         id="btnAnalytic" onclick="setState('analytic')">Analytic</button>
+  </div>
+
+  <!-- Viz -->
+  <div class="viz-area">
+    <svg class="viz" viewBox="0 0 1220 420" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(-45)">
+          <line x1="0" y1="0" x2="0" y2="6" stroke="#A8A8A8" stroke-width="1" stroke-opacity="0.42"/>
+        </pattern>
+
+        <marker id="arrow-bold" viewBox="0 0 10 10" refX="10" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#C8C8C8"/>
+        </marker>
+        <marker id="arrow-thin" viewBox="0 0 10 10" refX="10" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#8E8E8E" opacity="0.75"/>
+        </marker>
+        <marker id="arrow-dormant" viewBox="0 0 10 10" refX="10" refY="5"
+                markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#3A3A3A" opacity="0.55"/>
+        </marker>
+      </defs>
+
+      <!-- Timeline axis -->
+      <line class="axis" x1="40" y1="220" x2="1200" y2="220"/>
+
+      <!-- Century tick marks -->
+      <g id="ticks"></g>
+
+      <!-- Edges (rendered below nodes) -->
+      <g id="edges"></g>
+
+      <!-- Nodes -->
+      <g id="nodes">
+
+        <!-- Aristarchus — CONSCIOUS, medium, origin -->
+        <g class="node" data-id="aristarchus" transform="translate(60,220)">
+          <circle class="shape conscious" r="22"/>
+          <text class="node-name"  y="-40">Aristarchus</text>
+          <text class="node-place" y="-28">Samos</text>
+          <text class="node-date"  y="50">~310 BC</text>
+        </g>
+
+        <!-- Hunayn — UNCONSCIOUS, medium -->
+        <g class="node" data-id="hunayn" transform="translate(670,230)">
+          <circle class="shape unconscious" r="22"/>
+          <text class="node-name"  y="-40">Hunayn ibn Ishaq</text>
+          <text class="node-place" y="-28">Baghdad, 9th c.</text>
+          <text class="node-date"  y="50">~870</text>
+        </g>
+
+        <!-- Bayt al-Hikmah — institutional, large -->
+        <g class="node" data-id="bayt" transform="translate(720,132)">
+          <rect class="shape institutional" x="-38" y="-38" width="76" height="76"/>
+          <text class="node-name"  y="-52">Bayt al-Hikmah</text>
+          <text class="node-place" y="-40">Baghdad</text>
+          <text class="node-date"  y="60">9th–13th c.</text>
+        </g>
+
+        <!-- Carolingian scribes — UNCONSCIOUS, embodied function, near-zero agency -->
+        <g class="node" data-id="scribes" transform="translate(762,272)">
+          <g class="shape fragmented">
+            <path d="M 8,0 A 8,8 0 0,1 5.14,6.13"/>
+            <path d="M 0,8 A 8,8 0 0,1 -6.13,5.14"/>
+            <path d="M -8,0 A 8,8 0 0,1 -5.14,-6.13"/>
+            <path d="M 0,-8 A 8,8 0 0,1 6.13,-5.14"/>
+          </g>
+          <text class="node-name"  y="-24">Carolingian scribes</text>
+          <text class="node-place" y="-12">Frankish Gaul</text>
+          <text class="node-date"  y="36">~900</text>
+        </g>
+
+        <!-- Copernicus — CONSCIOUS + ACTIVATOR -->
+        <g class="node" data-id="copernicus" transform="translate(1055,220)">
+          <circle class="activator-ring" r="46"/>
+          <circle class="ignition-bloom" id="ignitionBloom" r="26"/>
+          <circle class="shape conscious activator" r="26"/>
+          <text class="node-name"  y="-44">Copernicus</text>
+          <text class="node-place" y="-32">Frauenburg</text>
+          <text class="node-date"  y="54">1543</text>
+        </g>
+
+        <!-- Rheticus — CONSCIOUS, medium -->
+        <g class="node" data-id="rheticus" transform="translate(1088,140)">
+          <circle class="shape conscious" r="22"/>
+          <text class="node-name"  y="-40">Rheticus</text>
+          <text class="node-place" y="-28">Wittenberg</text>
+          <text class="node-date"  y="50">1539</text>
+        </g>
+
+        <!-- Petreius — UNCONSCIOUS, large (strong agentivity) -->
+        <g class="node" data-id="petreius" transform="translate(1110,302)">
+          <circle class="shape unconscious" r="38"/>
+          <text class="node-name"  y="-56">Petreius</text>
+          <text class="node-place" y="-44">Nuremberg</text>
+          <text class="node-date"  y="62">1543</text>
+        </g>
+
+        <!-- Newton — CONSCIOUS, large, endpoint -->
+        <g class="node" data-id="newton" transform="translate(1175,220)">
+          <circle class="shape conscious" r="38"/>
+          <text class="node-name"  y="-56">Newton</text>
+          <text class="node-place" y="-44">Cambridge</text>
+          <text class="node-date"  y="60">1687</text>
+        </g>
+
+      </g>
+    </svg>
+  </div>
+
+  <hr class="divider">
+  <p class="caption">Eight vectors. Twenty centuries. One activation.</p>
+  <p class="state-label" id="stateLabel">Synchronic state — actors as they perceived themselves</p>
+  <p class="kbd-hint">Space&nbsp;: toggle</p>
+
+</div>
+
+<script>
+const NODES = {
+  aristarchus: { x:  60, y: 220, shape: 'circle', r: 22 },
+  hunayn:      { x: 670, y: 230, shape: 'circle', r: 22 },
+  bayt:        { x: 720, y: 132, shape: 'rect',   r: 38 },
+  scribes:     { x: 762, y: 272, shape: 'circle', r: 8  },
+  copernicus:  { x:1055, y: 220, shape: 'circle', r: 26 },
+  rheticus:    { x:1088, y: 140, shape: 'circle', r: 22 },
+  petreius:    { x:1110, y: 302, shape: 'circle', r: 38 },
+  newton:      { x:1175, y: 220, shape: 'circle', r: 38 },
+};
+
+const EDGES = [
+  { id:'aristarchus-hunayn', from:'aristarchus', to:'hunayn',     kind:'latent',     dormant:true,  order:3 },
+  { id:'hunayn-bayt',        from:'hunayn',      to:'bayt',       kind:'latent',     dormant:true,  order:2 },
+  { id:'bayt-scribes',       from:'bayt',        to:'scribes',    kind:'latent',     dormant:true,  order:1 },
+  { id:'scribes-copernicus', from:'scribes',     to:'copernicus', kind:'latent',     dormant:true,  order:0 },
+  { id:'copernicus-rheticus',from:'copernicus',  to:'rheticus',   kind:'deliberate', postActivation:true, step:0 },
+  { id:'rheticus-petreius',  from:'rheticus',    to:'petreius',   kind:'deliberate', postActivation:true, step:1 },
+  { id:'petreius-newton',    from:'petreius',    to:'newton',     kind:'latent',     postActivation:true, step:2 },
+];
+
+const NS = 'http://www.w3.org/2000/svg';
+let currentState = 'sync';
+let animating = false;
+
+function nodeEdgePoint(node, towardX, towardY) {
+  const dx = towardX - node.x, dy = towardY - node.y;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const ux = dx/len, uy = dy/len;
+  if (node.shape === 'rect') {
+    const hx = node.r, hy = node.r;
+    const t = Math.min(Math.abs(hx / ux) || Infinity, Math.abs(hy / uy) || Infinity);
+    return { x: node.x + ux * t, y: node.y + uy * t, ux, uy };
+  }
+  return { x: node.x + ux * node.r, y: node.y + uy * node.r, ux, uy };
+}
+
+function buildEdges() {
+  const g = document.getElementById('edges');
+  while (g.firstChild) g.removeChild(g.firstChild);
+
+  EDGES.forEach(e => {
+    const a = NODES[e.from];
+    const b = NODES[e.to];
+    if (!a || !b) return;
+
+    const start = nodeEdgePoint(a, b.x, b.y);
+    const end   = nodeEdgePoint(b, a.x, a.y);
+    const pad = 3;
+    const x1 = start.x + start.ux * pad;
+    const y1 = start.y + start.uy * pad;
+    const x2 = end.x   - end.ux   * pad;
+    const y2 = end.y   - end.uy   * pad;
+
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('id', 'edge-' + e.id);
+    line.classList.add('edge');
+    line.classList.add(e.kind);
+    if (e.dormant) line.classList.add('dormant');
+
+    line.setAttribute('marker-end', e.kind === 'deliberate'
+      ? 'url(#arrow-bold)' : 'url(#arrow-thin)');
+
+    line.dataset.kind = e.kind;
+    if (e.dormant) line.dataset.order = e.order;
+    if (e.postActivation) {
+      line.dataset.post = 'true';
+      line.dataset.step = e.step;
+    }
+
+    g.appendChild(line);
+  });
+}
+
+function buildTicks() {
+  const g = document.getElementById('ticks');
+  const yearMin = -310, yearMax = 1687;
+  const xMin = 40, xMax = 1200;
+  const centuries = [-300, 0, 500, 1000, 1500];
+  centuries.forEach(y => {
+    const x = xMin + (y - yearMin) / (yearMax - yearMin) * (xMax - xMin);
+    const tick = document.createElementNS(NS, 'line');
+    tick.setAttribute('x1', x); tick.setAttribute('y1', 216);
+    tick.setAttribute('x2', x); tick.setAttribute('y2', 224);
+    tick.classList.add('tick');
+    g.appendChild(tick);
+
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', x);
+    label.setAttribute('y', 238);
+    label.classList.add('tick-label');
+    label.textContent = y < 0 ? `${Math.abs(y)} BC` : `${y}`;
+    g.appendChild(label);
+  });
+}
+
+function setState(state) {
+  if (animating || state === currentState) return;
+  currentState = state;
+
+  document.getElementById('btnSync').classList.toggle('active', state === 'sync');
+  document.getElementById('btnAnalytic').classList.toggle('active', state === 'analytic');
+  document.getElementById('stateLabel').textContent = state === 'analytic'
+    ? 'Analytic state — dormancy revealed, activation visible'
+    : 'Synchronic state — actors as they perceived themselves';
+
+  const wrapper = document.getElementById('wrapper');
+  if (state === 'analytic') {
+    wrapper.classList.add('state-analytic');
+    animateToAnalytic();
+  } else {
+    wrapper.classList.remove('state-analytic');
+    animateToSync();
+  }
+}
+
+function animateToAnalytic() {
+  animating = true;
+  const dormantLines = Array.from(document.querySelectorAll('.edge.dormant'));
+  dormantLines.sort((a, b) => Number(a.dataset.order) - Number(b.dataset.order));
+  const step = 300;
+  dormantLines.forEach((line, i) => {
+    line.style.transitionDelay = (i * step) + 'ms';
+  });
+  setTimeout(() => {
+    dormantLines.forEach(l => l.style.transitionDelay = '');
+  }, step * dormantLines.length + 900);
+
+  setTimeout(triggerIgnition, 400);
+  setTimeout(triggerForwardPropagation, 1400);
+  setTimeout(() => { animating = false; }, 2600);
+}
+
+function animateToSync() {
+  animating = true;
+  const dormantLines = Array.from(document.querySelectorAll('.edge.dormant'));
+  dormantLines.sort((a, b) => Number(b.dataset.order) - Number(a.dataset.order));
+  const step = 180;
+  dormantLines.forEach((line, i) => {
+    line.style.transitionDelay = (i * step) + 'ms';
+  });
+  setTimeout(() => {
+    dormantLines.forEach(l => l.style.transitionDelay = '');
+  }, step * dormantLines.length + 900);
+
+  resetIgnition();
+  setTimeout(() => { animating = false; }, 1400);
+}
+
+function triggerIgnition() {
+  const bloom = document.getElementById('ignitionBloom');
+  const startTime = performance.now();
+  const duration = 1200;
+  const rStart = 26, rEnd = 135;
+  const opStart = 0.62, opEnd = 0;
+
+  function tick(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    bloom.setAttribute('r', rStart + (rEnd - rStart) * ease);
+    bloom.setAttribute('opacity', opStart + (opEnd - opStart) * ease);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function resetIgnition() {
+  const bloom = document.getElementById('ignitionBloom');
+  bloom.setAttribute('r', 26);
+  bloom.setAttribute('opacity', 0);
+}
+
+function triggerForwardPropagation() {
+  const post = Array.from(document.querySelectorAll('.edge[data-post="true"]'));
+  post.sort((a, b) => Number(a.dataset.step) - Number(b.dataset.step));
+  const step = 220;
+  post.forEach((edge, i) => {
+    setTimeout(() => {
+      edge.classList.add('pulsed');
+      setTimeout(() => edge.classList.remove('pulsed'), 380);
+    }, i * step);
+  });
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' || e.key === ' ') {
+    e.preventDefault();
+    setState(currentState === 'sync' ? 'analytic' : 'sync');
+  }
+});
+
+window.addEventListener('load', () => {
+  buildTicks();
+  buildEdges();
+});
+</script>
+</body>
+</html>
