@@ -66,9 +66,9 @@ Feedback welcome — open an issue or comment directly.
 ## Structure
 
 ```
-prototype_deux_etats.html   Active prototype — two-state system (synchronic / analytic)
-sketch_bluesky.html         Archived — initial perceptual test (6 nodes, node grammar only)
-sketch_widget.html          Archived — compact layout variant
+two-states.html   Active prototype — two-state system (synchronic / analytic)
+perceptual-test.html         Archived — initial perceptual test (6 nodes, node grammar only)
+sperceptual-test-compact.html          Archived — compact layout variant
 ```
 
 ---
@@ -94,7 +94,7 @@ These frameworks constrain analytical and visual choices without appearing in th
 
 ## About
 
-Built by [Karl Vaillancourt](https://karklou.github.io/KarlV) — data artist, strategic analyst, method builder.
+Built by [Karl V](https://karklou.github.io/KarlV) — data artist, strategic analyst, method builder.
 
 This project is part of a larger system (Mosaic) whose central question is: *what invisible infrastructure makes ideas survive?*
 
